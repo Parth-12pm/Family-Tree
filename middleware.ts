@@ -1,31 +1,19 @@
-import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request });
+  const sessionCookie = getSessionCookie(request);
 
-  // if (!token) {
-  //   if (request.nextUrl.pathname === "/login") {
-  //     return NextResponse.next()
-  //   }
-
-  //   return NextResponse.redirect(new URL("/login", request.url))
-  // }
+  // THIS IS NOT SECURE!
+  // This is the recommended approach to optimistically redirect users
+  // We recommend handling auth checks in each page/route
+  if (!sessionCookie) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (auth API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - login (login page)
-     */
-    "/((?!api/auth|api/editor|_next/static|_next/image|favicon.ico|login).*)",
-  ],
+  matcher: ["/dashboard"], // Specify the routes the middleware applies to
 };
